@@ -108,20 +108,20 @@ const AddDonor = () => {
   const checkEligibility = () => {
     const age = parseInt(formData.age);
     const isAgeValid = age >= 18 && age <= 65;
-    const hasRequiredFields = formData.name && formData.email && formData.phone && 
-                              formData.bloodType && formData.gender && 
-                              formData.latitude && formData.longitude;
-    
+    const hasRequiredFields = formData.name && formData.email && formData.phone &&
+      formData.bloodType && formData.gender &&
+      formData.latitude && formData.longitude;
+
     if (!isAgeValid) {
       setEligibilityStatus({ eligible: false, message: 'Age must be between 18 and 65 years' });
       return;
     }
-    
+
     if (!hasRequiredFields) {
       setEligibilityStatus({ eligible: false, message: 'Please fill all required fields including location' });
       return;
     }
-    
+
     setEligibilityStatus({ eligible: true, message: 'You are eligible to donate blood!' });
   };
 
@@ -173,28 +173,28 @@ const AddDonor = () => {
 
         <form onSubmit={handleSubmit} className="donor-form">
           {error && <div className="alert alert-error">{error}</div>}
-      {successDonor && (
-        <div className="alert alert-success">
-          <strong>Registration successful!</strong>
-          <div className="success-details">
-            <div><strong>Name:</strong> {successDonor.name}</div>
-            <div><strong>Email:</strong> {successDonor.email}</div>
-            <div><strong>Phone:</strong> {successDonor.phone}</div>
-            <div><strong>Blood Type:</strong> {successDonor.bloodType}</div>
-            {successDonor.address && <div><strong>Address:</strong> {successDonor.address}</div>}
-            {successDonor.latitude && successDonor.longitude && (
-              <div><strong>Location:</strong> {successDonor.latitude.toFixed(4)}, {successDonor.longitude.toFixed(4)}</div>
-            )}
-            {successDonor.isEligible !== undefined && (
-              <div><strong>Eligibility:</strong> {successDonor.isEligible ? 'Eligible' : 'Not eligible (auto-checked)'}</div>
-            )}
-          </div>
-        </div>
-      )}
+          {successDonor && (
+            <div className="alert alert-success">
+              <strong>Registration successful!</strong>
+              <div className="success-details">
+                <div><strong>Name:</strong> {successDonor.name}</div>
+                <div><strong>Email:</strong> {successDonor.email}</div>
+                <div><strong>Phone:</strong> {successDonor.phone}</div>
+                <div><strong>Blood Type:</strong> {successDonor.bloodType}</div>
+                {successDonor.address && <div><strong>Address:</strong> {successDonor.address}</div>}
+                {successDonor.latitude && successDonor.longitude && (
+                  <div><strong>Location:</strong> {successDonor.latitude.toFixed(4)}, {successDonor.longitude.toFixed(4)}</div>
+                )}
+                {successDonor.isEligible !== undefined && (
+                  <div><strong>Eligibility:</strong> {successDonor.isEligible ? 'Eligible' : 'Not eligible (auto-checked)'}</div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="form-section">
             <h3 className="section-title">Personal Information</h3>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="name">Full Name *</label>
@@ -296,7 +296,7 @@ const AddDonor = () => {
 
           <div className="form-section">
             <h3 className="section-title">Location</h3>
-            
+
             <div className="form-group">
               <label htmlFor="address">Address *</label>
               <input
@@ -364,16 +364,17 @@ const AddDonor = () => {
               </button>
             </div>
 
-            {formData.latitude && formData.longitude && (
+            {formData.latitude != null && formData.longitude != null && (
               <p className="location-confirmed">
-                ✓ Location set: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}
+                ✓ Location set: {Number(formData.latitude).toFixed(4)}, {Number(formData.longitude).toFixed(4)}
               </p>
             )}
+
           </div>
 
           <div className="form-section">
             <h3 className="section-title">Donation History</h3>
-            
+
             <div className="form-group">
               <label htmlFor="lastDonationDate">Last Donation Date</label>
               <input
