@@ -1,0 +1,143 @@
+{
+  "name": "BloodBridge Donor Notification Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "donor-registered",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - New Donor",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "donor-registered"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/donors",
+        "options": {}
+      },
+      "id": "fetch-donors",
+      "name": "Fetch All Donors",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.bloodType }}",
+              "operation": "equals",
+              "value2": "O-"
+            }
+          ]
+        }
+      },
+      "id": "check-universal-donor",
+      "name": "Check Universal Donor",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "sendHeaders": true,
+        "sendQuery": true,
+        "url": "https://api.email-service.com/send",
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json.email }}\",\n  \"subject\": \"Welcome to BloodBridge!\",\n  \"body\": \"Thank you for registering as a blood donor. Your donation can save lives!\"\n}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"message\": \"Donor registered and notification sent\" } }}"
+      },
+      "id": "webhook-response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - New Donor": {
+      "main": [
+        [
+          {
+            "node": "Fetch All Donors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch All Donors": {
+      "main": [
+        [
+          {
+            "node": "Check Universal Donor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Universal Donor": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}
+
+
+

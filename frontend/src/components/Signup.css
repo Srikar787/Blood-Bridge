@@ -1,0 +1,69 @@
+.signup-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+}
+
+.role-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.role-option {
+  cursor: pointer;
+}
+
+.role-option input[type="radio"] {
+  display: none;
+}
+
+.role-card {
+  padding: 1.25rem;
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius);
+  background: var(--gray-50);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.role-option input[type="radio"]:checked + .role-card {
+  border-color: var(--primary);
+  background: #fef2f2;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.role-card:hover {
+  border-color: var(--primary-light);
+  background: white;
+}
+
+.role-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.role-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.role-text strong {
+  font-size: 1rem;
+  color: var(--gray-900);
+}
+
+.role-text span {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+
+/* Import Login styles */
+@import './Login.css';
+
