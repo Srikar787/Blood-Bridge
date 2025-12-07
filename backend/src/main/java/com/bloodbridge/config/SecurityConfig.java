@@ -44,7 +44,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/donors/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/donors/**").hasRole("ADMIN")
                 // Donor registration or update/search require authenticated users (any role)
-                .requestMatchers(HttpMethod.POST, "/api/donors/**").hasAnyRole("DONOR", "REQUESTOR", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/donors/**").permitAll()
+                // .requestMatchers(HttpMethod.POST, "/api/donors/**").hasAnyRole("DONOR", "REQUESTOR", "ADMIN")
                 .requestMatchers("/api/requestors/**").hasAnyRole("REQUESTOR", "DONOR", "ADMIN")
                 // Allow search endpoints to be public so requestors can search without friction
                 .requestMatchers("/api/donors/search/**").permitAll()
