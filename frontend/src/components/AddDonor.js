@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -6,7 +6,7 @@ import './AddDonor.css';
 
 const AddDonor = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [formData, setFormData] = useState({
     userId: user?.email || '',
     name: '',
@@ -28,6 +28,17 @@ const AddDonor = () => {
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [locationLoading, setLocationLoading] = useState(false);
   const locationDebounceRef = useRef(null);
+
+  // Update userId when user changes
+  useEffect(() => {
+    if (user?.email) {
+      setFormData(prev => ({
+        ...prev,
+        userId: user.email,
+        email: prev.email || user.email
+      }));
+    }
+  }, [user]);
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -108,20 +119,20 @@ const AddDonor = () => {
   const checkEligibility = () => {
     const age = parseInt(formData.age);
     const isAgeValid = age >= 18 && age <= 65;
-    const hasRequiredFields = formData.name && formData.email && formData.phone &&
-      formData.bloodType && formData.gender &&
-      formData.latitude && formData.longitude;
-
+    const hasRequiredFields = formData.name && formData.email && formData.phone && 
+                              formData.bloodType && formData.gender && 
+                              formData.latitude && formData.longitude;
+    
     if (!isAgeValid) {
       setEligibilityStatus({ eligible: false, message: 'Age must be between 18 and 65 years' });
       return;
     }
-
+    
     if (!hasRequiredFields) {
       setEligibilityStatus({ eligible: false, message: 'Please fill all required fields including location' });
       return;
     }
-
+    
     setEligibilityStatus({ eligible: true, message: 'You are eligible to donate blood!' });
   };
 
@@ -139,8 +150,22 @@ const AddDonor = () => {
       longitude: formData.longitude ? parseFloat(formData.longitude) : null
     };
 
+    // Check if user is authenticated
+    if (!token || !user) {
+      setError('Please log in to register as a donor. Redirecting to login...');
+      setTimeout(() => navigate('/login'), 2000);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await axios.post('http://localhost:8081/api/donors', donorData);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      };
+      const res = await axios.post('http://localhost:8081/api/donors', donorData, config);
       setSuccessDonor(res.data);
       // Optionally keep the form filled so user can see what was submitted
       // Or clear fields below if preferred
@@ -148,7 +173,14 @@ const AddDonor = () => {
     } catch (err) {
       let errorMessage = 'Failed to add donor. ';
       if (err.response) {
-        errorMessage += `Server error: ${err.response.status} - ${err.response.data?.message || err.response.statusText}`;
+        if (err.response.status === 401) {
+          errorMessage = 'Your session has expired. Please log in again.';
+          setTimeout(() => navigate('/login'), 2000);
+        } else if (err.response.status === 403) {
+          errorMessage = 'Access denied. Please ensure you are logged in and have the correct permissions. If the problem persists, try logging out and logging back in.';
+        } else {
+          errorMessage += `Server error: ${err.response.status} - ${err.response.data?.message || err.response.statusText}`;
+        }
       } else if (err.request) {
         errorMessage += 'Backend is not responding. Please ensure the backend is running on http://localhost:8081';
       } else {
@@ -156,6 +188,8 @@ const AddDonor = () => {
       }
       setError(errorMessage);
       console.error('Error adding donor:', err);
+      console.error('Token:', token ? 'Present' : 'Missing');
+      console.error('User:', user);
     } finally {
       setLoading(false);
     }
@@ -174,27 +208,112 @@ const AddDonor = () => {
         <form onSubmit={handleSubmit} className="donor-form">
           {error && <div className="alert alert-error">{error}</div>}
           {successDonor && (
-            <div className="alert alert-success">
-              <strong>Registration successful!</strong>
+            <div className="alert alert-success success-message">
+              <div className="success-header">
+                <span className="success-icon">✓</span>
+                <h2>Registration Successful!</h2>
+              </div>
+              <p className="success-subtitle">Your donor profile has been created successfully. Here are your details:</p>
               <div className="success-details">
-                <div><strong>Name:</strong> {successDonor.name}</div>
-                <div><strong>Email:</strong> {successDonor.email}</div>
-                <div><strong>Phone:</strong> {successDonor.phone}</div>
-                <div><strong>Blood Type:</strong> {successDonor.bloodType}</div>
-                {successDonor.address && <div><strong>Address:</strong> {successDonor.address}</div>}
+                <div className="detail-row">
+                  <span className="detail-label">👤 Name:</span>
+                  <span className="detail-value">{successDonor.name}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">📧 Email:</span>
+                  <span className="detail-value">{successDonor.email}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">📞 Phone:</span>
+                  <span className="detail-value">{successDonor.phone}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">🩸 Blood Type:</span>
+                  <span className="detail-value blood-type-value">{successDonor.bloodType}</span>
+                </div>
+                {successDonor.age && (
+                  <div className="detail-row">
+                    <span className="detail-label">🎂 Age:</span>
+                    <span className="detail-value">{successDonor.age} years</span>
+                  </div>
+                )}
+                {successDonor.gender && (
+                  <div className="detail-row">
+                    <span className="detail-label">⚧ Gender:</span>
+                    <span className="detail-value">{successDonor.gender}</span>
+                  </div>
+                )}
+                {successDonor.address && (
+                  <div className="detail-row">
+                    <span className="detail-label">📍 Address:</span>
+                    <span className="detail-value">{successDonor.address}</span>
+                  </div>
+                )}
                 {successDonor.latitude && successDonor.longitude && (
-                  <div><strong>Location:</strong> {successDonor.latitude.toFixed(4)}, {successDonor.longitude.toFixed(4)}</div>
+                  <div className="detail-row">
+                    <span className="detail-label">🗺️ Location:</span>
+                    <span className="detail-value">{successDonor.latitude.toFixed(4)}, {successDonor.longitude.toFixed(4)}</span>
+                  </div>
                 )}
+                {successDonor.lastDonationDate && (
+                  <div className="detail-row">
+                    <span className="detail-label">📅 Last Donation:</span>
+                    <span className="detail-value">{new Date(successDonor.lastDonationDate).toLocaleDateString()}</span>
+                  </div>
+                )}
+                <div className="detail-row">
+                  <span className="detail-label">✓ Status:</span>
+                  <span className={`detail-value ${successDonor.isActive ? 'status-active' : 'status-inactive'}`}>
+                    {successDonor.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
                 {successDonor.isEligible !== undefined && (
-                  <div><strong>Eligibility:</strong> {successDonor.isEligible ? 'Eligible' : 'Not eligible (auto-checked)'}</div>
+                  <div className="detail-row">
+                    <span className="detail-label">🎯 Eligibility:</span>
+                    <span className={`detail-value ${successDonor.isEligible ? 'eligible-badge' : 'not-eligible-badge'}`}>
+                      {successDonor.isEligible ? '✓ Eligible to Donate' : '⚠ Not Eligible (check requirements)'}
+                    </span>
+                  </div>
                 )}
+              </div>
+              <div className="success-actions">
+                <button 
+                  type="button" 
+                  className="btn btn-primary" 
+                  onClick={() => {
+                    setSuccessDonor(null);
+                    setFormData({
+                      userId: user?.email || '',
+                      name: '',
+                      email: '',
+                      phone: '',
+                      bloodType: '',
+                      address: '',
+                      latitude: null,
+                      longitude: null,
+                      gender: '',
+                      age: '',
+                      lastDonationDate: '',
+                      isActive: true
+                    });
+                  }}
+                >
+                  Register Another Donor
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-outline" 
+                  onClick={() => navigate('/')}
+                >
+                  Go to Home
+                </button>
               </div>
             </div>
           )}
 
           <div className="form-section">
             <h3 className="section-title">Personal Information</h3>
-
+            
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="name">Full Name *</label>
@@ -296,7 +415,7 @@ const AddDonor = () => {
 
           <div className="form-section">
             <h3 className="section-title">Location</h3>
-
+            
             <div className="form-group">
               <label htmlFor="address">Address *</label>
               <input
@@ -364,17 +483,16 @@ const AddDonor = () => {
               </button>
             </div>
 
-            {formData.latitude != null && formData.longitude != null && (
+            {formData.latitude && formData.longitude && (
               <p className="location-confirmed">
-                ✓ Location set: {Number(formData.latitude).toFixed(4)}, {Number(formData.longitude).toFixed(4)}
+                ✓ Location set: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}
               </p>
             )}
-
           </div>
 
           <div className="form-section">
             <h3 className="section-title">Donation History</h3>
-
+            
             <div className="form-group">
               <label htmlFor="lastDonationDate">Last Donation Date</label>
               <input

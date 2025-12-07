@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bloodbridge-backend
+    ports:
+      - "${BACKEND_PORT:-8081}:8081"
+    environment:
+      # MongoDB - Using your existing Atlas connection
+      - SPRING_DATA_MONGODB_URI=${MONGODB_URI:-mongodb+srv://srikarreddy3666_db_user:SQJpRS725mUirp4C@cluster0.9ynn7vx.mongodb.net/bloodbridge?retryWrites=true&w=majority&ssl=true}
+      - SPRING_DATA_MONGODB_DATABASE=bloodbridge
+      
+      # Server
+      - SERVER_PORT=8081
+      
+      # JWT
+      - JWT_SECRET=${JWT_SECRET:-BloodBridgeSecretKeyForJWTTokenGeneration2024SecureKeyReplaceThisWithASecureRandomStringInProduction}
+      - JWT_EXPIRATION=86400000
+      
+      # CORS - Allow frontend
+      - SPRING_WEB_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:80,http://localhost
+      
+      # Google OAuth
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-212722254826-ascbmvrdommhqt15m59icbr3uq4b5gop.apps.googleusercontent.com}
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-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}
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI=http://localhost:8081/login/oauth2/code/google
+      
+      # Email Configuration
+      - EMAIL_ENABLED=${EMAIL_ENABLED:-true}
+      - EMAIL_FROM_NAME=BloodBridge
+      - SPRING_MAIL_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SPRING_MAIL_PORT=${SMTP_PORT:-587}
+      - SPRING_MAIL_USERNAME=${SMTP_USERNAME:-srikarreddy3666@gmail.com}
+      - SPRING_MAIL_PASSWORD=${SMTP_PASSWORD:-wpxp hamq utvt yasb}
+      
+      # SMS Configuration
+      - SMS_ENABLED=${SMS_ENABLED:-true}
+      - SMS_USE_FREE_GATEWAY=${SMS_USE_FREE_GATEWAY:-true}
+      
+    networks:
+      - bloodbridge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/api/donors/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bloodbridge-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - bloodbridge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  bloodbridge-network:
+    driver: bridge
+

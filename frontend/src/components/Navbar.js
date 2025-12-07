@@ -23,9 +23,8 @@ const Navbar = () => {
         <div className="navbar-menu">
           {isAuthenticated ? (
             <>
-              {user?.role === 'ADMIN' && (
-                <Link to="/donors" className="navbar-link">Donors</Link>
-              )}
+              {/* All authenticated users can view donors list */}
+              <Link to="/donors" className="navbar-link">Donors</Link>
 
               {/* Common actions for any authenticated user */}
               <Link to="/add-donor" className="navbar-link">Register as Donor</Link>
