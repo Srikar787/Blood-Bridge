@@ -2,12 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import NotificationModal from './NotificationModal';
 import './DonorsList.css';
 
 const DonorsList = () => {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedDonor, setSelectedDonor] = useState(null);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const { token, user } = useAuth();
 
   const fetchDonors = useCallback(async () => {
@@ -25,9 +28,9 @@ const DonorsList = () => {
     } catch (err) {
       console.error('Error fetching donors:', err);
       if (err.response?.status === 401) {
-        setError('Please log in as admin to view donors.');
+        setError('Please log in to view donors.');
       } else if (err.response?.status === 403) {
-        setError('You do not have permission to view donors.');
+        setError('You do not have permission to view donors. Please log in.');
       } else if (err.code === 'ECONNREFUSED') {
         setError('Failed to connect to backend. Make sure the backend is running on port 8081.');
       } else {
@@ -41,11 +44,6 @@ const DonorsList = () => {
   useEffect(() => {
     fetchDonors();
   }, [fetchDonors]);
-
-  // Only admins should access donors list
-  if (user && user.role !== 'ADMIN') {
-    return <Navigate to="/" replace />;
-  }
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this donor?')) {
@@ -88,9 +86,11 @@ const DonorsList = () => {
           <h1>Blood Donors</h1>
           <p>View and manage registered blood donors</p>
         </div>
-        <Link to="/add-donor" className="btn btn-primary">
-          + Add New Donor
-        </Link>
+        {user?.role === 'ADMIN' && (
+          <Link to="/add-donor" className="btn btn-primary">
+            + Add New Donor
+          </Link>
+        )}
       </div>
 
       {donors.length === 0 ? (
@@ -181,23 +181,48 @@ const DonorsList = () => {
                 </div>
 
                 <div className="donor-actions">
-                  <a href={`tel:${donor.phone}`} className="btn btn-primary btn-sm">
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => {
+                      setSelectedDonor(donor);
+                      setShowNotificationModal(true);
+                    }}
+                  >
+                    🔔 Send Notification
+                  </button>
+                  <a href={`tel:${donor.phone}`} className="btn btn-outline btn-sm">
                     📞 Call
                   </a>
                   <a href={`mailto:${donor.email}`} className="btn btn-outline btn-sm">
                     ✉️ Email
                   </a>
-                  <button
-                    className="btn btn-ghost btn-sm btn-danger"
-                    onClick={() => handleDelete(donor.id)}
-                  >
-                    🗑️ Delete
-                  </button>
+                  {user?.role === 'ADMIN' && (
+                    <button
+                      className="btn btn-ghost btn-sm btn-danger"
+                      onClick={() => handleDelete(donor.id)}
+                    >
+                      🗑️ Delete
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </>
+      )}
+
+      {selectedDonor && (
+        <NotificationModal
+          donor={selectedDonor}
+          isOpen={showNotificationModal}
+          onClose={() => {
+            setShowNotificationModal(false);
+            setSelectedDonor(null);
+          }}
+          onSuccess={() => {
+            // Optionally refresh donors list or show success message
+          }}
+        />
       )}
     </div>
   );

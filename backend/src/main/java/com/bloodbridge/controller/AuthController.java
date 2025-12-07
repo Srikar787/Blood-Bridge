@@ -104,7 +104,7 @@ public class AuthController {
                 .body(new AuthResponse(null, null, null, null, e.getMessage()));
         }
     }
-    
+
     @GetMapping("/oauth2/callback")
     public ResponseEntity<AuthResponse> oauth2Callback(@AuthenticationPrincipal OAuth2User oauth2User) {
         return oauth2Success(oauth2User);

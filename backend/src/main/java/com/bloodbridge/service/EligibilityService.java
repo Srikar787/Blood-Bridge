@@ -73,9 +73,9 @@ public class EligibilityService {
                 return String.format("Must wait %d days since last donation. %d days remaining.", 
                     MIN_DAYS_SINCE_LAST_DONATION,
                     MIN_DAYS_SINCE_LAST_DONATION - daysSinceLastDonation);
-            }
-        }
-        
+    }
+}
+
         return "Please complete all required fields including location";
     }
 }

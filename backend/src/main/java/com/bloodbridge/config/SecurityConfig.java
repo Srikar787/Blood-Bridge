@@ -40,13 +40,18 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/donors/health", "/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/donors/**").hasRole("ADMIN")
+                // Allow authenticated users (any role) to view donors list
+                .requestMatchers(HttpMethod.GET, "/api/donors").hasAnyRole("DONOR", "REQUESTOR", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/donors/{id}").hasAnyRole("DONOR", "REQUESTOR", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/donors/blood-type/**").hasAnyRole("DONOR", "REQUESTOR", "ADMIN")
+                // Only ADMIN can delete or update donors
                 .requestMatchers(HttpMethod.DELETE, "/api/donors/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/donors/**").hasRole("ADMIN")
-                // Donor registration or update/search require authenticated users (any role)
-                .requestMatchers(HttpMethod.POST, "/api/donors/**").permitAll()
-                // .requestMatchers(HttpMethod.POST, "/api/donors/**").hasAnyRole("DONOR", "REQUESTOR", "ADMIN")
+                // Donor registration requires authenticated users (any role)
+                .requestMatchers(HttpMethod.POST, "/api/donors").hasAnyRole("DONOR", "REQUESTOR", "ADMIN")
                 .requestMatchers("/api/requestors/**").hasAnyRole("REQUESTOR", "DONOR", "ADMIN")
+                // Notification endpoints - authenticated users can send notifications
+                .requestMatchers("/api/notifications/**").hasAnyRole("REQUESTOR", "DONOR", "ADMIN")
                 // Allow search endpoints to be public so requestors can search without friction
                 .requestMatchers("/api/donors/search/**").permitAll()
                 .anyRequest().authenticated()

@@ -1,22 +1,28 @@
-# OS
-.DS_Store
-Thumbs.db
+# Dependencies
+node_modules/
+target/
+
+# Environment variables
+.env
+.env.local
+.env.production
 
 # IDE
 .idea/
 .vscode/
-*.swp
-*.swo
-*~
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
 logs/
 
-# Environment variables
-.env
-.env.local
-.env.*.local
+# Build outputs
+build/
+dist/
 
-
-
+# Docker
+.docker/

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import NotificationModal from './NotificationModal';
 import './RequestorDashboard.css';
 
 const RequestorDashboard = () => {
@@ -16,7 +18,10 @@ const RequestorDashboard = () => {
   const [eligibilityCriteria, setEligibilityCriteria] = useState(null);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [selectedDonor, setSelectedDonor] = useState(null);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const locationDebounceRef = useRef(null);
+  const { user, token } = useAuth();
 
   useEffect(() => {
     fetchEligibilityCriteria();
@@ -40,11 +45,11 @@ const RequestorDashboard = () => {
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setSearchData({
-          ...searchData,
+        setSearchData(prev => ({
+          ...prev,
           latitude: position.coords.latitude,
           longitude: position.coords.longitude
-        });
+        }));
         setError('');
         setLoading(false);
       },
@@ -57,7 +62,7 @@ const RequestorDashboard = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setSearchData({ ...searchData, [name]: value });
+    setSearchData(prev => ({ ...prev, [name]: value }));
     setError('');
 
     if (name === 'address') {
@@ -324,7 +329,16 @@ const RequestorDashboard = () => {
                   </div>
 
                   <div className="donor-actions">
-                    <a href={`tel:${donor.phone}`} className="btn btn-primary btn-sm">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        setSelectedDonor(donor);
+                        setShowNotificationModal(true);
+                      }}
+                    >
+                      🔔 Send Notification
+                    </button>
+                    <a href={`tel:${donor.phone}`} className="btn btn-outline btn-sm">
                       📞 Call
                     </a>
                     <a href={`mailto:${donor.email}`} className="btn btn-outline btn-sm">
@@ -337,6 +351,20 @@ const RequestorDashboard = () => {
           </div>
         </div>
       </div>
+
+      {selectedDonor && (
+        <NotificationModal
+          donor={selectedDonor}
+          isOpen={showNotificationModal}
+          onClose={() => {
+            setShowNotificationModal(false);
+            setSelectedDonor(null);
+          }}
+          onSuccess={() => {
+            // Optionally show success message or refresh
+          }}
+        />
+      )}
     </div>
   );
 };

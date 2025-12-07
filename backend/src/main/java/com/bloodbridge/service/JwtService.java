@@ -33,6 +33,17 @@ public class JwtService {
     public String extractEmail(String token) {
         return extractUsername(token); // Email is stored as subject
     }
+    
+    public String extractRole(String token) {
+        try {
+            return extractClaim(token, claims -> {
+                Object roleObj = claims.get("role");
+                return roleObj != null ? roleObj.toString() : null;
+            });
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
