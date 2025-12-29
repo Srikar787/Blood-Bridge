@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { API_ENDPOINTS } from '../config';
 import './NotificationModal.css';
 
 const NotificationModal = ({ donor, isOpen, onClose, onSuccess }) => {
@@ -48,7 +49,7 @@ const NotificationModal = ({ donor, isOpen, onClose, onSuccess }) => {
       };
 
       const response = await axios.post(
-        'http://localhost:8081/api/notifications/send',
+        API_ENDPOINTS.NOTIFICATIONS.SEND,
         requestData,
         config
       );

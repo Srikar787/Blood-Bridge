@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { API_ENDPOINTS } from '../config';
 import NotificationModal from './NotificationModal';
 import './RequestorDashboard.css';
 
@@ -29,7 +30,7 @@ const RequestorDashboard = () => {
 
   const fetchEligibilityCriteria = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/api/donors/search/eligibility-criteria');
+      const response = await axios.get(API_ENDPOINTS.DONORS.SEARCH_ELIGIBILITY);
       setEligibilityCriteria(response.data);
     } catch (err) {
       console.error('Error fetching eligibility criteria:', err);
@@ -129,7 +130,7 @@ const RequestorDashboard = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:8081/api/donors/search/nearby',
+        API_ENDPOINTS.DONORS.SEARCH_NEARBY,
         {
           bloodType: searchData.bloodType,
           latitude: searchData.latitude,
