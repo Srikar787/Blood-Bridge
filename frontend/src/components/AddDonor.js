@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { API_ENDPOINTS } from '../config';
 import './AddDonor.css';
 
 const AddDonor = () => {
@@ -165,7 +166,7 @@ const AddDonor = () => {
           'Content-Type': 'application/json'
         }
       };
-      const res = await axios.post('http://localhost:8081/api/donors', donorData, config);
+      const res = await axios.post(API_ENDPOINTS.DONORS.CREATE, donorData, config);
       setSuccessDonor(res.data);
       // Optionally keep the form filled so user can see what was submitted
       // Or clear fields below if preferred
@@ -182,7 +183,7 @@ const AddDonor = () => {
           errorMessage += `Server error: ${err.response.status} - ${err.response.data?.message || err.response.statusText}`;
         }
       } else if (err.request) {
-        errorMessage += 'Backend is not responding. Please ensure the backend is running on http://localhost:8081';
+        errorMessage += 'Backend is not responding. Please check your connection.';
       } else {
         errorMessage += err.message || 'Unknown error occurred';
       }

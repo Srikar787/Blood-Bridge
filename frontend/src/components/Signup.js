@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { API_ENDPOINTS } from '../config';
 import './Signup.css';
 
 const Signup = () => {
@@ -28,7 +29,7 @@ const Signup = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:8081/api/auth/register', formData);
+      const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER, formData);
       const { token, email, name, role } = response.data;
       
       login({ email, name, role }, token);
@@ -51,7 +52,7 @@ const Signup = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8081/oauth2/authorization/google';
+    window.location.href = API_ENDPOINTS.AUTH.OAUTH_GOOGLE;
   };
 
   return (

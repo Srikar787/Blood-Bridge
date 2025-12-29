@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { API_ENDPOINTS } from '../config';
 import NotificationModal from './NotificationModal';
 import './DonorsList.css';
 
@@ -22,7 +23,7 @@ const DonorsList = () => {
           Authorization: `Bearer ${token}`
         };
       }
-      const response = await axios.get('http://localhost:8081/api/donors', config);
+      const response = await axios.get(API_ENDPOINTS.DONORS.LIST, config);
       setDonors(response.data);
       setError(null);
     } catch (err) {
@@ -48,7 +49,7 @@ const DonorsList = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this donor?')) {
       try {
-        await axios.delete(`http://localhost:8081/api/donors/${id}`);
+        await axios.delete(API_ENDPOINTS.DONORS.DELETE(id));
         fetchDonors();
       } catch (err) {
         alert('Failed to delete donor');
