@@ -10,6 +10,9 @@ RUN npm run build
 # Stage 2: NGINX
 FROM nginx:1.25-alpine
 
+# remove default entrypoint scripts that can modify config at runtime
+RUN rm -rf /docker-entrypoint.d/*
+
 COPY --from=build /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 
