@@ -1,10 +1,12 @@
 // API Configuration
-// In Docker, this will be handled by nginx proxy
-// For local development, use http://localhost:8081
-// For production, use relative paths or your domain
+// For production on Railway, set REACT_APP_API_URL environment variable to your backend URL
+// Example: REACT_APP_API_URL=https://bloodbridge-backend-production-xxxx.up.railway.app
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8081');
+  (process.env.NODE_ENV === 'production' 
+    ? '' // Use relative path in production if REACT_APP_API_URL not set
+    : 'http://localhost:8081' // Dev default
+  );
 
 export const API_URL = API_BASE_URL;
 export const API_ENDPOINTS = {

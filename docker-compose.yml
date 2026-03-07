@@ -61,8 +61,6 @@ services:
       - "3000:80"
     depends_on:
       - backend
-    environment:
-      - backend_url=http://backend:8081
     networks:
       - bloodbridge-network
     restart: unless-stopped
