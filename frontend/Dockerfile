@@ -11,10 +11,10 @@ RUN npm run build
 FROM nginx:1.25-alpine
 
 COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
 
-# Simple health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD nginx -t || exit 1
+# Override entrypoint to skip docker-entrypoint.sh
+ENTRYPOINT ["nginx"]
+CMD ["-g", "daemon off;"]
