@@ -4,12 +4,12 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # Copy pom.xml first for better caching
-COPY backend/pom.xml .
+COPY pom.xml .
 # Download dependencies (this layer will be cached if pom.xml doesn't change)
 RUN mvn dependency:go-offline -B
 
 # Copy source code
-COPY backend/src ./src
+COPY src ./src
 
 # Build the application
 RUN mvn clean package -DskipTests
