@@ -20,6 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +32,9 @@ public class SecurityConfig {
     @Autowired
     @Lazy
     private com.bloodbridge.service.AuthService authService;
+    
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -74,18 +78,18 @@ public class SecurityConfig {
                             String token = authService.getJwtService().generateToken(user.getEmail(), user.getRole());
                             
                             // Redirect to frontend with token
-                            response.sendRedirect("http://localhost:3000/auth/callback?token=" + token + 
+                            response.sendRedirect(frontendUrl + "/auth/callback?token=" + token + 
                                 "&email=" + user.getEmail() + "&name=" + user.getName() + "&role=" + user.getRole());
                         } catch (Exception e) {
-                            response.sendRedirect("http://localhost:3000/login?error=" + 
+                            response.sendRedirect(frontendUrl + "/login?error=" + 
                                 java.net.URLEncoder.encode(e.getMessage(), "UTF-8"));
                         }
                     } else {
-                        response.sendRedirect("http://localhost:3000/login?error=oauth_failed");
+                        response.sendRedirect(frontendUrl + "/login?error=oauth_failed");
                     }
                 })
                 .failureHandler((request, response, exception) -> {
-                    response.sendRedirect("http://localhost:3000/login?error=oauth_failed");
+                    response.sendRedirect(frontendUrl + "/login?error=oauth_failed");
                 })
             );
 
@@ -107,7 +111,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        // Allow both frontend URL and localhost for development
+        String allowedOrigins = System.getenv("SPRING_WEB_CORS_ALLOWED_ORIGINS");
+        if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
+            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        } else {
+            configuration.setAllowedOrigins(List.of(frontendUrl, "http://localhost:3000"));
+        }
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

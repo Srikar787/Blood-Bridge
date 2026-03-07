@@ -130,3 +130,6 @@ If you want to keep backend local:
 
 **Best Practice:** Deploy frontend to Vercel + backend to Railway = Best of both worlds! 🚀
 
+
+
+

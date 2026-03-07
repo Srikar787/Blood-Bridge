@@ -13,7 +13,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/donors")
-@CrossOrigin(origins = "http://localhost:3000")
 public class DonorController {
 
     @Autowired
