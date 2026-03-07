@@ -6,7 +6,7 @@ server {
     
     # API proxy to backend
     location /api {
-        proxy_pass ${backend_url};
+        proxy_pass ${backend_url:-http://backend:8081};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -20,7 +20,7 @@ server {
     
     # OAuth endpoints
     location /oauth2 {
-        proxy_pass ${backend_url};
+        proxy_pass ${backend_url:-http://backend:8081};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -32,7 +32,7 @@ server {
     
     # Login OAuth endpoint
     location /login/oauth2 {
-        proxy_pass ${backend_url};
+        proxy_pass ${backend_url:-http://backend:8081};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
