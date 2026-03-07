@@ -10,10 +10,13 @@ RUN npm run build
 # Stage 2: NGINX
 FROM nginx:alpine
 
+# Install curl for health check
+RUN apk add --no-cache curl
+
 COPY --from=build /app/build /usr/share/nginx/html
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 80
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
